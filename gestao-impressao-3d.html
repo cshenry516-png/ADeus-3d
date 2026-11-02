@@ -48,17 +48,18 @@
   }
   .main-tabs button {
     flex: 1;
-    padding: 11px 8px;
+    padding: 11px 4px;
     border: none;
     background: transparent;
     color: var(--text-dim);
     font-family: inherit;
-    font-size: 0.92rem;
+    font-size: 0.82rem;
     font-weight: 600;
     cursor: pointer;
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
   }
   .main-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
 
@@ -87,7 +88,7 @@
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   label { font-size: 0.83rem; color: var(--text-dim); margin-bottom: 5px; display: flex; justify-content: space-between; }
   label .hint { font-size: 0.73rem; color: var(--text-faint); font-weight: normal; }
-  input[type="number"], input[type="text"], input[type="date"] {
+  input[type="number"], input[type="text"], input[type="date"], select {
     padding: 10px 12px;
     background: var(--panel-2);
     border: 1px solid var(--line);
@@ -100,8 +101,9 @@
     width: 100%;
     color-scheme: dark;
   }
+  select { font-family: 'Space Grotesk', sans-serif; }
   input::placeholder { color: var(--text-faint); font-family: 'Space Grotesk', sans-serif; }
-  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,122,69,0.15); }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,122,69,0.15); }
   .field .row .hint { text-align: center; }
 
   .result-card {
@@ -179,6 +181,7 @@
   }
   #logTable td { padding: 8px; border-bottom: 1px solid var(--line); white-space: nowrap; font-family: 'JetBrains Mono', monospace; color: var(--text-dim); }
   #logTable td.item-cell { white-space: normal; min-width: 100px; font-family: 'Space Grotesk', sans-serif; color: var(--text); }
+  .log-printer { font-size: 0.7rem; color: var(--text-faint); margin-top: 2px; }
   #logTable .del-btn { background: none; border: none; color: var(--bad); cursor: pointer; font-size: 0.9rem; padding: 2px 6px; font-family: inherit; }
 
   .log-stats { margin-top: 4px; font-size: 0.8rem; color: var(--text-dim); }
@@ -189,12 +192,12 @@
     border-top: 1px solid var(--line); font-weight: 700; color: var(--text); font-size: 0.95rem;
   }
   .log-total span:last-child { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
-  #clearLogBtn, #clearAllBtn {
+  #clearLogBtn, #clearAllBtn, #clearExpensesBtn {
     margin-top: 12px; width: 100%; padding: 9px; background: transparent; color: var(--text-faint);
     border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 0.8rem; cursor: pointer;
   }
-  #clearLogBtn:hover, #clearAllBtn:hover { color: var(--bad); border-color: var(--bad); }
-  #clearLogBtn.confirm-armed, #clearAllBtn.confirm-armed { background: var(--bad); color: #2A0509; border-color: var(--bad); font-weight: 700; }
+  #clearLogBtn:hover, #clearAllBtn:hover, #clearExpensesBtn:hover { color: var(--bad); border-color: var(--bad); }
+  #clearLogBtn.confirm-armed, #clearAllBtn.confirm-armed, #clearExpensesBtn.confirm-armed { background: var(--bad); color: #2A0509; border-color: var(--bad); font-weight: 700; }
   .stock-del.confirm-armed, .sale-actions button.del.confirm-armed { color: var(--bad); transform: scale(1.15); }
 
   /* ---- Vendas tab ---- */
@@ -206,12 +209,12 @@
   .toggle-pago button.active.pago { background: var(--good); color: #0B1E15; }
   .toggle-pago button.active.pendente { background: var(--warn); color: #2A1E04; }
 
-  #addBtn {
+  #addBtn, #addExpenseBtn {
     margin-top: 4px; width: 100%; padding: 13px;
     background: var(--accent); color: var(--accent-ink);
     border: none; border-radius: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer;
   }
-  #addBtn:active { transform: scale(0.98); }
+  #addBtn:active, #addExpenseBtn:active { transform: scale(0.98); }
 
   .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
   .summary-box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 8px; text-align: center; }
@@ -282,19 +285,6 @@
   .stock-summary span:last-child { font-family: 'JetBrains Mono', monospace; color: var(--text); font-weight: 700; }
 
   button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  @media (max-width: 560px) {
-    body { padding: 14px 10px 28px; }
-    .card { padding: 14px; }
-    .row { grid-template-columns: 1fr; gap: 0; }
-    .btn-row { flex-direction: column; }
-    .summary-grid { gap: 6px; }
-    .summary-box { padding: 11px 5px; }
-    .summary-box .value { font-size: 0.88rem; }
-    .main-tabs button { font-size: 0.82rem; padding: 10px 4px; }
-    .sale-top { flex-direction: column; }
-    .sale-value { align-self: flex-start; }
-  }
 </style>
 </head>
 <body>
@@ -303,9 +293,10 @@
   <div class="subtitle">Precifique suas peças e controle vendas e pagamentos</div>
 
   <div class="main-tabs">
-    <button class="active" data-tab="calculadora" onclick="showMainTab('calculadora')">🧮 Calculadora</button>
+    <button class="active" data-tab="calculadora" onclick="showMainTab('calculadora')">🧮 Calc.</button>
     <button data-tab="vendas" onclick="showMainTab('vendas')">💰 Vendas</button>
     <button data-tab="estoque" onclick="showMainTab('estoque')">📦 Estoque</button>
+    <button data-tab="faturamento" onclick="showMainTab('faturamento')">📊 Financ.</button>
   </div>
 
   <!-- ===================== ABA CALCULADORA ===================== -->
@@ -333,16 +324,29 @@
           <input type="number" id="filamentPrice" value="120" min="0" step="0.01">
         </div>
         <div class="field">
-          <label>Peso usado <span class="hint">gramas</span></label>
+          <label>Peso usado <span class="hint">gramas no lote inteiro</span></label>
           <input type="number" id="filamentWeight" value="50" min="0" step="0.1">
         </div>
       </div>
     </div>
 
     <div class="card">
+      <h2>🖨️ Impressora</h2>
+      <div class="field">
+        <label>Qual impressora vai imprimir?</label>
+        <select id="printerModel" onchange="applyPrinterPreset()">
+          <option value="a1|95|3529|5000" selected>Bambu Lab A1 (95W)</option>
+          <option value="cc2|120|4980|5000">Elegoo Centauri Carbon 2 (~120W estimado)</option>
+          <option value="custom">Outra / personalizada</option>
+        </select>
+        <div class="hint" style="margin-top:4px; text-align:left;">Ao trocar, a potência, o valor e a vida útil são preenchidos (editáveis abaixo). A potência da Elegoo é uma estimativa: o fabricante só informa o pico (1100W em 220V). Meça com um wattímetro.</div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>⏱️ Tempo e Energia</h2>
       <div class="field">
-        <label>Tempo de impressão</label>
+        <label>Tempo total de impressão do lote</label>
         <div class="row">
           <div>
             <input type="number" id="printHours" value="4" min="0" step="1" placeholder="horas">
@@ -355,12 +359,26 @@
         </div>
       </div>
       <div class="field">
-        <label>Potência média <span class="hint">watts (A1 ≈ 95W em PLA)</span></label>
+        <label>Potência média <span class="hint">watts médios imprimindo PLA</span></label>
         <input type="number" id="power" value="95" min="0" step="1">
       </div>
       <div class="field">
-        <label>Tarifa de energia - Copel (R$) <span class="hint">por kWh, B1 residencial c/ impostos</span></label>
+        <label>Tarifa de energia - Copel (R$) <span class="hint">por kWh, SEM impostos (B1)</span></label>
         <input type="number" id="energyPrice" value="0.768" min="0" step="0.001">
+      </div>
+      <div class="field">
+        <label>Impostos na conta <span class="hint">% (ICMS + PIS/Cofins)</span></label>
+        <input type="number" id="energyTax" value="24" min="0" max="60" step="0.1">
+        <div class="hint" style="margin-top:4px; text-align:left;">Estimativa para o PR. Jeito mais exato: divida o total da sua conta pelos kWh consumidos, coloque o resultado na tarifa e deixe impostos em 0 e bandeira verde.</div>
+      </div>
+      <div class="field">
+        <label>Bandeira tarifária <span class="hint">custo extra da ANEEL</span></label>
+        <select id="flagSurcharge">
+          <option value="0">🟢 Verde — sem custo extra</option>
+          <option value="0.01885">🟡 Amarela — +R$ 1,885 /100kWh</option>
+          <option value="0.04463" selected>🔴 Vermelha 1 — +R$ 4,463 /100kWh</option>
+          <option value="0.07877">🔴 Vermelha 2 — +R$ 7,877 /100kWh</option>
+        </select>
       </div>
     </div>
 
@@ -368,7 +386,7 @@
       <h2>🔧 Desgaste da Impressora</h2>
       <div class="row">
         <div class="field">
-          <label>Valor da impressora (R$) <span class="hint">Bambu Lab A1</span></label>
+          <label>Valor da impressora (R$) <span class="hint">quanto você pagou</span></label>
           <input type="number" id="printerValue" value="3529" min="0" step="1">
         </div>
         <div class="field">
@@ -386,7 +404,7 @@
           <input type="number" id="laborRate" value="20" min="0" step="0.01">
         </div>
         <div class="field">
-          <label>Preparo / setup <span class="hint">minutos</span></label>
+          <label>Preparo / setup do lote <span class="hint">minutos</span></label>
           <input type="number" id="laborTime" value="15" min="0" step="1">
         </div>
       </div>
@@ -395,16 +413,16 @@
     <div class="card">
       <h2>🎨 Pós-processamento</h2>
       <div class="field">
-        <label>Tempo de pós-processamento <span class="hint">minutos</span></label>
+        <label>Pós-processamento do lote <span class="hint">minutos totais</span></label>
         <input type="number" id="postProcessTime" value="0" min="0" step="1">
         <div class="hint" style="margin-top:4px;">Lixar, remover suportes, pintar, montar peças...</div>
       </div>
       <div class="field">
-        <label>Materiais de pós-processamento (R$) <span class="hint">tinta, verniz, lixa, cola...</span></label>
+        <label>Materiais de pós-processamento (R$) <span class="hint">valor total do lote</span></label>
         <input type="number" id="postProcessMaterials" value="0" min="0" step="0.01">
       </div>
       <div class="field">
-        <label>Outros custos extras (R$) <span class="hint">embalagem, etiqueta...</span></label>
+        <label>Outros custos extras (R$) <span class="hint">valor total do lote</span></label>
         <input type="number" id="extraCosts" value="0" min="0" step="0.01">
       </div>
     </div>
@@ -414,17 +432,32 @@
       <div class="row">
         <div class="field">
           <label>Taxa de falha <span class="hint">%</span></label>
-          <input type="number" id="failRate" value="10" min="0" max="100" step="1">
+          <input type="number" id="failRate" value="10" min="0" max="80" step="1">
         </div>
         <div class="field">
           <label>Margem de lucro <span class="hint">% (mín. recomendado: 30%)</span></label>
-          <input type="number" id="profitMargin" value="30" min="30" step="1">
+          <input type="number" id="profitMargin" value="30" min="0" max="90" step="1">
         </div>
       </div>
     </div>
 
+    <div class="card">
+      <h2>🏛️ Imposto MEI</h2>
+      <div class="row">
+        <div class="field">
+          <label>DAS mensal (R$) <span class="hint">comércio 2026</span></label>
+          <input type="number" id="meiDas" value="82.05" min="0" step="0.01">
+        </div>
+        <div class="field">
+          <label>Vendas estimadas/mês <span class="hint">unidades</span></label>
+          <input type="number" id="meiMonthlySales" value="30" min="1" step="1">
+        </div>
+      </div>
+      <div class="footer-note" style="text-align:left; margin-top:0;">O DAS-MEI é fixo por mês (não é % da venda). Aqui ele é diluído entre as unidades que você estima vender no mês, pra entrar como custo em cada peça.</div>
+    </div>
+
     <div class="card result-card">
-      <div class="label">PREÇO SUGERIDO DE VENDA</div>
+      <div class="label">PREÇO SUGERIDO DE VENDA DIRETA</div>
       <div class="price" id="finalPrice">R$ 0,00</div>
       <div class="breakdown" id="breakdown"></div>
       <div class="btn-row">
@@ -440,7 +473,7 @@
         <table id="logTable">
           <thead>
             <tr>
-              <th>Data</th><th>Item</th><th>Qtde</th><th>Custo Produção</th><th>Preço/un</th><th>Total</th><th>Lucro</th><th>Margem</th><th></th>
+              <th>Data</th><th>Item</th><th>Qtde</th><th>Custo ajustado</th><th>Preço/un</th><th>Total</th><th>Lucro estimado</th><th>Margem</th><th></th>
             </tr>
           </thead>
           <tbody id="logBody"></tbody>
@@ -448,10 +481,10 @@
         <div class="log-stats">
           <div><span>Total de unidades</span><span id="logUnits">0</span></div>
           <div><span>Custo de produção total</span><span id="logCost">R$ 0,00</span></div>
-          <div><span>Lucro total</span><span id="logProfit">R$ 0,00</span></div>
+          <div><span>Lucro potencial estimado</span><span id="logProfit">R$ 0,00</span></div>
         </div>
         <div class="log-total">
-          <span>Total vendido registrado</span>
+          <span>Preço sugerido total das impressões</span>
           <span id="logTotal">R$ 0,00</span>
         </div>
         <button id="clearLogBtn" onclick="confirmClick(this, clearLog, '⚠️ Toque de novo para confirmar')">🗑️ Limpar registro</button>
@@ -483,9 +516,10 @@
         </div>
         <div class="field">
           <label>Quantidade vendida</label>
-          <input type="number" id="saleQty" value="1" min="1" step="1">
+          <input type="number" id="saleQty" value="1" min="1" step="1" required>
         </div>
       </div>
+      <div class="footer-note" style="text-align:left; margin-top:-4px; margin-bottom:10px;">Informe o valor total do pedido. A quantidade é usada para baixar o estoque.</div>
       <div class="field">
         <label>Data</label>
         <input type="date" id="saleDate">
@@ -539,7 +573,7 @@
       </div>
       <div class="field">
         <label>Quantidade</label>
-        <input type="number" id="stockAdjustQty" value="1" min="1" step="1">
+        <input type="number" id="stockAdjustQty" value="1" min="1" step="1" required>
       </div>
       <div class="btn-row">
         <button id="stockAddBtn" onclick="manualStockChange(1)">➕ Adicionar</button>
@@ -558,6 +592,77 @@
       </div>
     </div>
 
+    <div class="footer-note">Os dados ficam salvos neste navegador.</div>
+  </div>
+
+  <!-- ===================== ABA FATURAMENTO ===================== -->
+  <div id="tabFaturamento" class="tab-content">
+
+    <div class="filter-tabs">
+      <button class="active" data-period="todos" onclick="setPeriod('todos')">Tudo</button>
+      <button data-period="mes" onclick="setPeriod('mes')">Este mês</button>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-box total">
+        <div class="label">Faturamento</div>
+        <div class="value" id="fatFaturamento">R$ 0,00</div>
+      </div>
+      <div class="summary-box pendente">
+        <div class="label">Gastos</div>
+        <div class="value" id="fatGastos">R$ 0,00</div>
+      </div>
+      <div class="summary-box recebido">
+        <div class="label">Resultado estimado</div>
+        <div class="value" id="fatLucro">R$ 0,00</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏭 Custo de produção</h2>
+      <div class="footer-note" style="text-align:left; margin-top:0;">Somado automaticamente a partir do Registro de Impressões, incluindo a reserva para falhas. Como o custo entra quando a peça é produzida, o resultado pode ficar menor enquanto houver peças ainda em estoque; não é um demonstrativo contábil.</div>
+      <div class="log-total"><span>Total no período</span><span id="fatProdCost">R$ 0,00</span></div>
+    </div>
+
+    <div class="card">
+      <h2>➕ Novo Gasto</h2>
+      <div class="field">
+        <label>Descrição</label>
+        <input type="text" id="expenseDesc" placeholder="Ex: Compra de filamento">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Categoria</label>
+          <select id="expenseCategory">
+            <option>Filamento e materiais</option>
+            <option>Manutenção da impressora</option>
+            <option>Ferramentas e equipamentos</option>
+            <option>Embalagem</option>
+            <option>Marketing e divulgação</option>
+            <option>Taxas e plataformas</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Valor (R$)</label>
+          <input type="number" id="expenseValue" placeholder="0,00" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="field">
+        <label>Data</label>
+        <input type="date" id="expenseDate">
+      </div>
+      <button id="addExpenseBtn" onclick="addExpense()">Adicionar Gasto</button>
+      <div class="footer-note" style="text-align:left;">Atenção: filamento, energia e mão de obra das peças registradas já entram no "Custo de produção". Lance aqui só o que a calculadora não cobre (manutenção, ferramentas, anúncios, embalagem comprada em lote...) para não contar duas vezes.</div>
+    </div>
+
+    <div class="card">
+      <h2>📉 Gastos Registrados</h2>
+      <div id="expenseEmpty" class="empty-state">Nenhum gasto lançado ainda.</div>
+      <div id="expenseList"></div>
+    </div>
+
+    <button id="clearExpensesBtn" onclick="confirmClick(this, clearExpenses, '⚠️ Toque de novo para confirmar')">🗑️ Apagar todos os gastos</button>
     <div class="footer-note">Os dados ficam salvos neste navegador.</div>
   </div>
 
@@ -580,6 +685,16 @@
     return div.innerHTML;
   }
 
+  // Para valores dentro de atributos HTML (escapa também aspas)
+  function escapeAttr(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function todayISO() {
     const d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -595,80 +710,143 @@
     document.getElementById('tabCalculadora').classList.toggle('active', tab === 'calculadora');
     document.getElementById('tabVendas').classList.toggle('active', tab === 'vendas');
     document.getElementById('tabEstoque').classList.toggle('active', tab === 'estoque');
+    document.getElementById('tabFaturamento').classList.toggle('active', tab === 'faturamento');
     if (tab === 'estoque') renderStock();
+    if (tab === 'faturamento') renderFaturamento();
   }
 
   // ============================================================
   //  CALCULADORA
   // ============================================================
-  const calcIds = ['filamentPrice','filamentWeight','printHours','printMinutes','power','energyPrice',
-    'printerValue','printerLife','laborRate','laborTime','postProcessTime','postProcessMaterials','extraCosts','failRate','profitMargin','quantity'];
+  const calcIds = ['filamentPrice','filamentWeight','printHours','printMinutes','power','energyPrice','energyTax','flagSurcharge',
+    'printerValue','printerLife','laborRate','laborTime','postProcessTime','postProcessMaterials','extraCosts','failRate','profitMargin','quantity',
+    'meiDas','meiMonthlySales'];
 
   let currentCalc = null;
+  let currentCalcRegistered = false;
+
+  // ---------- Impressora selecionada ----------
+  const PRINTER_KEY = 'impressora_selecionada_3d';
+  const PRINTER_VALUES = ['a1|95|3529|5000', 'cc2|120|4980|5000', 'custom'];
+  const PRINTER_NAMES = { a1: 'Bambu Lab A1', cc2: 'Elegoo Centauri Carbon 2', custom: 'Outra impressora' };
+
+  function currentPrinterName() {
+    const id = document.getElementById('printerModel').value.split('|')[0];
+    return PRINTER_NAMES[id] || '';
+  }
+
+  function applyPrinterPreset(save = true) {
+    const val = document.getElementById('printerModel').value;
+    if (save) {
+      try { localStorage.setItem(PRINTER_KEY, val); } catch (e) {}
+    }
+    if (val !== 'custom') {
+      const [, power, value, life] = val.split('|');
+      document.getElementById('power').value = power;
+      document.getElementById('printerValue').value = value;
+      document.getElementById('printerLife').value = life;
+    }
+    calculate();
+  }
+
+  function restorePrinter() {
+    let saved = null;
+    try { saved = localStorage.getItem(PRINTER_KEY); } catch (e) {}
+    if (saved && saved !== 'custom' && PRINTER_VALUES.includes(saved)) {
+      document.getElementById('printerModel').value = saved;
+      applyPrinterPreset(false);
+    }
+  }
 
   function calculate() {
+    currentCalcRegistered = false;
+    const read = (id, fallback = 0) => {
+      const el = document.getElementById(id);
+      const n = Number.parseFloat(el.value);
+      return Number.isFinite(n) ? Math.max(0, n) : fallback;
+    };
     const itemName = document.getElementById('itemName').value.trim();
-    const quantity = Math.max(1, parseInt(document.getElementById('quantity').value) || 1);
-    const filamentPrice = parseFloat(document.getElementById('filamentPrice').value) || 0;
-    const filamentWeight = parseFloat(document.getElementById('filamentWeight').value) || 0;
-    const printHours = parseFloat(document.getElementById('printHours').value) || 0;
-    const printMinutes = parseFloat(document.getElementById('printMinutes').value) || 0;
+    const quantity = Math.max(1, Math.floor(read('quantity', 1)));
+    const filamentPrice = read('filamentPrice');
+    const filamentWeight = read('filamentWeight');
+    const printHours = read('printHours');
+    const printMinutes = Math.min(59, read('printMinutes'));
     const printTime = printHours + (printMinutes / 60);
-    const power = parseFloat(document.getElementById('power').value) || 0;
-    const energyPrice = parseFloat(document.getElementById('energyPrice').value) || 0;
-    const printerValue = parseFloat(document.getElementById('printerValue').value) || 0;
-    const printerLife = parseFloat(document.getElementById('printerLife').value) || 1;
-    const laborRate = parseFloat(document.getElementById('laborRate').value) || 0;
-    const laborTime = parseFloat(document.getElementById('laborTime').value) || 0;
-    const postProcessTime = parseFloat(document.getElementById('postProcessTime').value) || 0;
-    const postProcessMaterials = parseFloat(document.getElementById('postProcessMaterials').value) || 0;
-    const extraCosts = parseFloat(document.getElementById('extraCosts').value) || 0;
-    const failRateRaw = parseFloat(document.getElementById('failRate').value);
-    const failRate = Math.min(99, Math.max(0, isFinite(failRateRaw) ? failRateRaw : 0));
-    let profitMargin = parseFloat(document.getElementById('profitMargin').value) || 0;
-    let marginWarning = '';
-    if (profitMargin < 30) {
-      marginWarning = `⚠️ Margem abaixo de 30% — usando 30% no cálculo (mínimo recomendado)`;
-      profitMargin = 30;
-    }
+    const power = read('power');
+    const energyPrice = read('energyPrice');
+    const flagSurcharge = read('flagSurcharge');
+    const energyTax = Math.min(60, read('energyTax'));
+    const printerValue = read('printerValue');
+    const printerLife = Math.max(1, read('printerLife', 1));
+    const laborRate = read('laborRate');
+    const laborTime = read('laborTime');
+    const postProcessTime = read('postProcessTime');
+    const postProcessMaterials = read('postProcessMaterials');
+    const extraCosts = read('extraCosts');
+    const meiDas = read('meiDas');
+    const meiMonthlySales = Math.max(1, Math.floor(read('meiMonthlySales', 1)));
+    const failRate = Math.min(80, read('failRate'));
+    const profitMargin = Math.min(90, read('profitMargin'));
 
+    // Todos os valores de consumo/tempo e extras acima representam o lote inteiro.
     const filamentCost = (filamentWeight / 1000) * filamentPrice;
-    const energyCost = (power / 1000) * printTime * energyPrice;
+    const effectiveKwhPrice = (energyPrice + flagSurcharge) / (1 - energyTax / 100);
+    const energyCost = (power / 1000) * printTime * effectiveKwhPrice;
     const depreciationCost = (printerValue / printerLife) * printTime;
     const laborCost = (laborTime / 60) * laborRate;
     const postProcessLaborCost = (postProcessTime / 60) * laborRate;
+    const meiTaxPerUnit = meiDas / meiMonthlySales;
+    const meiTaxTotal = meiTaxPerUnit * quantity;
+    const baseCost = filamentCost + energyCost + depreciationCost + laborCost + postProcessLaborCost + postProcessMaterials + extraCosts + meiTaxTotal;
 
-    const baseCost = filamentCost + energyCost + depreciationCost + laborCost + postProcessLaborCost + postProcessMaterials + extraCosts;
-    const withFailMargin = baseCost / (1 - (failRate / 100));
-    const finalPrice = withFailMargin / (1 - (profitMargin / 100));
+    // A taxa de falha cria uma reserva para cobrir reimpressões; margem é sobre o preço de venda.
+    const riskAdjustedCost = baseCost / (1 - failRate / 100);
+    const directTotalPrice = riskAdjustedCost / (1 - profitMargin / 100);
+    const directUnitPrice = directTotalPrice / quantity;
+
+    const selectedTotalPrice = directTotalPrice;
+    const selectedUnitPrice = directUnitPrice;
+    const selectedNetRevenue = selectedTotalPrice;
+    const selectedProfit = selectedNetRevenue - riskAdjustedCost;
+    const selectedMargin = selectedNetRevenue > 0 ? (selectedProfit / selectedNetRevenue) * 100 : 0;
     const productionCostPerUnit = baseCost / quantity;
-    const pricePerUnit = finalPrice / quantity;
-    const profit = finalPrice - baseCost;
-    const profitMarginReal = finalPrice > 0 ? (profit / finalPrice) * 100 : 0;
+    const riskCostPerUnit = riskAdjustedCost / quantity;
 
-    document.getElementById('finalPrice').textContent = 'R$ ' + fmt(pricePerUnit) + (quantity > 1 ? ' /un' : '');
-
-    const warningHtml = marginWarning ? `<div class="margin-warning">${marginWarning}</div>` : '';
-
+    const warnings = [];
+    if (profitMargin < 30) warnings.push('Margem abaixo de 30%: o cálculo respeita o percentual informado, mas avalie se cobre seus objetivos.');
+    if (failRate > 25) warnings.push('Taxa de falha elevada: revise o perfil de impressão e a estimativa de perdas.');
+    if (printTime === 0 && filamentWeight === 0) warnings.push('Informe o consumo de filamento e/ou o tempo de impressão para obter um custo realista.');
+    
+    document.getElementById('finalPrice').textContent = 'R$ ' + fmt(selectedUnitPrice) + (quantity > 1 ? ' /un' : '');
+    const warningHtml = warnings.map(w => `<div class="margin-warning">⚠️ ${w}</div>`).join('');
     document.getElementById('breakdown').innerHTML = `
       ${warningHtml}
-      <div><span>Filamento</span><span>R$ ${fmt(filamentCost)}</span></div>
-      <div><span>Energia</span><span>R$ ${fmt(energyCost)}</span></div>
+      <div><span>Filamento (${fmt(filamentWeight)} g)</span><span>R$ ${fmt(filamentCost)}</span></div>
+      <div><span>Energia (${fmt(printTime)} h)</span><span>R$ ${fmt(energyCost)}</span></div>
       <div><span>Desgaste da impressora</span><span>R$ ${fmt(depreciationCost)}</span></div>
       <div><span>Mão de obra (preparo)</span><span>R$ ${fmt(laborCost)}</span></div>
       <div><span>Pós-processamento (mão de obra)</span><span>R$ ${fmt(postProcessLaborCost)}</span></div>
       <div><span>Materiais de pós-processamento</span><span>R$ ${fmt(postProcessMaterials)}</span></div>
       <div><span>Extras</span><span>R$ ${fmt(extraCosts)}</span></div>
-      <div><span>Custo de produção (lote)</span><span>R$ ${fmt(baseCost)}</span></div>
-      <div><span>Quantidade</span><span>${quantity} un</span></div>
-      <div><span>Custo de produção / unidade</span><span>R$ ${fmt(productionCostPerUnit)}</span></div>
-      <div><span>Preço de venda / unidade</span><span>R$ ${fmt(pricePerUnit)}</span></div>
-      <div><span>Preço de venda total do lote</span><span>R$ ${fmt(finalPrice)}</span></div>
-      <div><span>Lucro (total do lote)</span><span>R$ ${fmt(profit)}</span></div>
-      <div><span>Margem de lucro real</span><span>${fmt(profitMarginReal)}%</span></div>
+      <div><span>DAS-MEI diluído (${quantity} un)</span><span>R$ ${fmt(meiTaxTotal)}</span></div>
+      <div><span>Custo de produção do lote</span><span>R$ ${fmt(baseCost)}</span></div>
+      <div><span>Reserva para falhas (${fmt(failRate)}%)</span><span>R$ ${fmt(riskAdjustedCost - baseCost)}</span></div>
+      <div><span>Custo ajustado / unidade</span><span>R$ ${fmt(riskCostPerUnit)}</span></div>
+      <div><span>Preço sugerido / unidade</span><span>R$ ${fmt(selectedUnitPrice)}</span></div>
+      <div><span>Preço sugerido / lote</span><span>R$ ${fmt(selectedTotalPrice)}</span></div>
+      <div><span>Lucro estimado do lote</span><span>R$ ${fmt(selectedProfit)}</span></div>
+      <div><span>Margem de lucro</span><span>${fmt(selectedMargin)}%</span></div>
+      <div><span>Quantidade do lote</span><span>${quantity} un</span></div>
     `;
 
-    currentCalc = { itemName, quantity, filamentWeight, printTime, baseCost, productionCostPerUnit, pricePerUnit, finalPrice, profit, profitMarginReal, registered: false };
+    currentCalc = {
+      itemName, quantity, filamentWeight, printTime, baseCost,
+      productionCostPerUnit, pricePerUnit: selectedUnitPrice,
+      finalPrice: selectedTotalPrice, profit: selectedProfit,
+      profitMarginReal: selectedMargin, printer: currentPrinterName(),
+      directUnitPrice, directTotalPrice, riskAdjustedCost, netRevenue: selectedNetRevenue,
+      adjustedCost: riskAdjustedCost
+    };
 
     const btn = document.getElementById('registerBtn');
     btn.classList.remove('saved');
@@ -682,20 +860,24 @@
     try {
       const raw = localStorage.getItem(LOG_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed)) return [];
       return parsed.map(e => {
-        const baseCost = (e.baseCost !== undefined) ? e.baseCost : (e.finalPrice || 0);
-        const finalPrice = e.finalPrice || 0;
-        const profit = (e.profit !== undefined) ? e.profit : (finalPrice - baseCost);
-        const profitMarginReal = (e.profitMarginReal !== undefined) ? e.profitMarginReal : (finalPrice > 0 ? (profit / finalPrice) * 100 : 0);
+        const baseCost = Number(e.baseCost !== undefined ? e.baseCost : (e.finalPrice || 0)) || 0;
+        const finalPrice = Number(e.finalPrice) || 0;
+        const profit = Number(e.profit !== undefined ? e.profit : (finalPrice - baseCost)) || 0;
+        const profitMarginReal = Number(e.profitMarginReal !== undefined ? e.profitMarginReal : (finalPrice > 0 ? (profit / finalPrice) * 100 : 0)) || 0;
         return {
           date: e.date || '',
           itemName: e.itemName || '',
-          quantity: e.quantity || 1,
+          quantity: Math.max(1, Math.floor(Number(e.quantity) || 1)),
           baseCost: baseCost,
-          pricePerUnit: (e.pricePerUnit !== undefined) ? e.pricePerUnit : finalPrice,
+          adjustedCost: Number.isFinite(Number(e.adjustedCost)) ? Number(e.adjustedCost) : baseCost,
+          pricePerUnit: Number(e.pricePerUnit !== undefined ? e.pricePerUnit : finalPrice) || 0,
           finalPrice: finalPrice,
+          netRevenue: Number(e.netRevenue !== undefined ? e.netRevenue : finalPrice) || 0,
           profit: profit,
-          profitMarginReal: profitMarginReal
+          profitMarginReal: profitMarginReal,
+          printer: e.printer || ''
         };
       });
     } catch (e) { return []; }
@@ -726,10 +908,10 @@
       const marginColor = entry.profitMarginReal >= 30 ? '#2e7d32' : (entry.profitMarginReal >= 0 ? '#e07b00' : '#c0392b');
       return `
         <tr>
-          <td>${entry.date}</td>
-          <td class="item-cell">${entry.itemName || '(sem nome)'}</td>
-          <td>${entry.quantity} un</td>
-          <td>R$ ${fmt(entry.baseCost)}</td>
+          <td>${escapeHtml(entry.date)}</td>
+          <td class="item-cell">${entry.itemName ? escapeHtml(entry.itemName) : '(sem nome)'}${entry.printer ? `<div class="log-printer">${escapeHtml(entry.printer)}</div>` : ''}</td>
+          <td>${Number(entry.quantity) || 0} un</td>
+          <td>R$ ${fmt(entry.adjustedCost)}</td>
           <td>R$ ${fmt(entry.pricePerUnit)}</td>
           <td>R$ ${fmt(entry.finalPrice)}</td>
           <td>R$ ${fmt(entry.profit)}</td>
@@ -739,11 +921,12 @@
       `;
     }).join('');
 
-    const totalRevenue = log.reduce((sum, e) => sum + e.finalPrice, 0);
-    const totalCost = log.reduce((sum, e) => sum + e.baseCost, 0);
-    const totalUnits = log.reduce((sum, e) => sum + e.quantity, 0);
-    const totalProfit = totalRevenue - totalCost;
-    const totalMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+    const totalRevenue = log.reduce((sum, e) => sum + (Number(e.finalPrice) || 0), 0);
+    const totalCost = log.reduce((sum, e) => sum + e.adjustedCost, 0);
+    const totalUnits = log.reduce((sum, e) => sum + (Number(e.quantity) || 0), 0);
+    const totalProfit = log.reduce((sum, e) => sum + (Number(e.profit) || 0), 0);
+    const totalNetRevenue = log.reduce((sum, e) => sum + (Number(e.netRevenue) || 0), 0);
+    const totalMargin = totalNetRevenue > 0 ? (totalProfit / totalNetRevenue) * 100 : 0;
     document.getElementById('logUnits').textContent = totalUnits + ' un';
     document.getElementById('logCost').textContent = 'R$ ' + fmt(totalCost);
     document.getElementById('logProfit').textContent = 'R$ ' + fmt(totalProfit) + ' (' + fmt(totalMargin) + '%)';
@@ -751,11 +934,7 @@
   }
 
   function registerPrint() {
-    if (!currentCalc) return;
-    if (currentCalc.registered) {
-      alert('Esta impressão já foi registrada. Altere algum dado para registrar novamente.');
-      return;
-    }
+    if (!currentCalc || currentCalcRegistered) return;
     const log = loadLog();
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR');
@@ -764,20 +943,22 @@
       itemName: currentCalc.itemName,
       quantity: currentCalc.quantity,
       baseCost: currentCalc.baseCost,
+      adjustedCost: currentCalc.riskAdjustedCost,
       pricePerUnit: currentCalc.pricePerUnit,
       finalPrice: currentCalc.finalPrice,
+      netRevenue: currentCalc.netRevenue,
       profit: currentCalc.profit,
       profitMarginReal: currentCalc.profitMarginReal,
-      stockAdded: !!currentCalc.itemName
+      printer: currentCalc.printer
     });
     saveLog(log);
     renderLog();
+    currentCalcRegistered = true;
 
     if (currentCalc.itemName) {
       addStockQty(currentCalc.itemName, currentCalc.quantity);
       renderStock();
     }
-    currentCalc.registered = true;
 
     const btn = document.getElementById('registerBtn');
     btn.classList.add('saved');
@@ -786,23 +967,9 @@
 
   function deleteEntry(idx) {
     const log = loadLog();
-    const entry = log[idx];
-    if (!entry) return;
-
-    // Se esta produção adicionou unidades ao estoque, desfaz a entrada.
-    if (entry.stockAdded && entry.itemName && entry.quantity > 0) {
-      const stock = loadStock();
-      const key = stockKey(entry.itemName);
-      if (stock[key]) {
-        stock[key].qty = Math.max(0, (Number(stock[key].qty) || 0) - entry.quantity);
-        saveStock(stock);
-      }
-    }
-
     log.splice(idx, 1);
     saveLog(log);
     renderLog();
-    renderStock();
   }
 
   // Confirmação por "toque duas vezes" (evita depender do confirm() nativo,
@@ -831,7 +998,6 @@
     saveLog([]);
     renderLog();
   }
-
   // ---------- Integração: Calculadora -> Vendas ----------
   function sendToSale() {
     if (!currentCalc) return;
@@ -860,7 +1026,8 @@
   function loadProducts() {
     try {
       const raw = localStorage.getItem(PRODUCTS_KEY);
-      return raw ? JSON.parse(raw) : {};
+      const data = raw ? JSON.parse(raw) : {};
+      return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
     } catch (e) { return {}; }
   }
 
@@ -935,7 +1102,8 @@
   function loadStock() {
     try {
       const raw = localStorage.getItem(STOCK_KEY);
-      return raw ? JSON.parse(raw) : {};
+      const data = raw ? JSON.parse(raw) : {};
+      return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
     } catch (e) { return {}; }
   }
 
@@ -948,12 +1116,13 @@
   }
 
   function addStockQty(name, qty) {
-    if (!name || !name.trim() || qty <= 0) return;
+    const amount = Math.floor(Number(qty));
+    if (!name || !name.trim() || !Number.isFinite(amount) || amount <= 0) return;
     registerProduct(name);
     const stock = loadStock();
     const key = stockKey(name);
     if (!stock[key]) stock[key] = { name: name.trim(), qty: 0 };
-    stock[key].qty += qty;
+    stock[key].qty = Math.max(0, Math.floor(Number(stock[key].qty) || 0)) + amount;
     saveStock(stock);
   }
 
@@ -962,10 +1131,13 @@
     const stock = loadStock();
     const key = stockKey(name);
     if (!stock[key]) return { found: false, ok: false, available: 0 };
-    const available = stock[key].qty;
-    const ok = available >= qty;
-    stock[key].qty = Math.max(0, available - qty);
-    saveStock(stock);
+    const available = Math.max(0, Math.floor(Number(stock[key].qty) || 0));
+    const amount = Math.floor(Number(qty));
+    const ok = Number.isFinite(amount) && amount > 0 && available >= amount;
+    if (ok) {
+      stock[key].qty = available - amount;
+      saveStock(stock);
+    }
     return { found: true, ok, available };
   }
 
@@ -973,10 +1145,11 @@
     const nameInput = document.getElementById('stockItemName');
     const qtyInput = document.getElementById('stockAdjustQty');
     const name = nameInput.value.trim();
-    const qty = Math.max(1, parseInt(qtyInput.value) || 1);
+    const qtyRaw = Number(qtyInput.value);
+    const qty = Math.floor(qtyRaw);
 
-    if (!name) {
-      alert('Digite o nome do item.');
+    if (!name || !Number.isInteger(qtyRaw) || qty < 1) {
+      alert('Digite o nome do item e uma quantidade inteira a partir de 1.');
       return;
     }
 
@@ -989,7 +1162,7 @@
         return;
       }
       if (!res.ok) {
-        alert(`Estoque insuficiente: havia apenas ${res.available} un. Estoque zerado.`);
+        alert(`Estoque insuficiente: há apenas ${res.available} un. O estoque não foi alterado.`);
       }
     }
 
@@ -1001,7 +1174,7 @@
   function adjustStockByKey(key, delta) {
     const stock = loadStock();
     if (!stock[key]) return;
-    stock[key].qty = Math.max(0, stock[key].qty + delta);
+    stock[key].qty = Math.max(0, Math.floor(Number(stock[key].qty) || 0) + Math.trunc(Number(delta) || 0));
     saveStock(stock);
     renderStock();
   }
@@ -1036,7 +1209,7 @@
   function renderStockDatalist() {
     const stock = loadStock();
     const datalist = document.getElementById('stockDatalist');
-    datalist.innerHTML = Object.values(stock).map(s => `<option value="${escapeHtml(s.name)}">`).join('');
+    datalist.innerHTML = Object.values(stock).map(s => `<option value="${escapeAttr(s.name)}">`).join('');
   }
 
   function renderStock() {
@@ -1066,16 +1239,16 @@
           <div class="stock-name">${escapeHtml(s.name)}</div>
         </div>
         <div class="stock-qty-controls">
-          <button onclick="adjustStockByKey('${key}', -1)">−</button>
+          <button data-key="${escapeAttr(key)}" onclick="adjustStockByKey(this.dataset.key, -1)">−</button>
           <span class="stock-qty-value">${s.qty} un</span>
-          <button onclick="adjustStockByKey('${key}', 1)">+</button>
-          <button class="stock-del" onclick="confirmClick(this, () => removeStockItem('${key}'), '❓')">🗑️</button>
+          <button data-key="${escapeAttr(key)}" onclick="adjustStockByKey(this.dataset.key, 1)">+</button>
+          <button class="stock-del" data-key="${escapeAttr(key)}" onclick="const k = this.dataset.key; confirmClick(this, () => removeStockItem(k), '❓')">🗑️</button>
         </div>
       </div>
     `;
     }).join('');
 
-    const totalUnits = items.reduce((sum, [, s]) => sum + s.qty, 0);
+    const totalUnits = items.reduce((sum, [, s]) => sum + Math.max(0, Math.floor(Number(s.qty) || 0)), 0);
     document.getElementById('stockTotalUnits').textContent = totalUnits + ' un';
   }
 
@@ -1103,7 +1276,8 @@
   function loadSales() {
     try {
       const raw = localStorage.getItem(SALES_KEY);
-      return raw ? JSON.parse(raw) : [];
+      const data = raw ? JSON.parse(raw) : [];
+      return Array.isArray(data) ? data : [];
     } catch (e) { return []; }
   }
 
@@ -1115,37 +1289,35 @@
     const clientName = document.getElementById('clientName').value.trim();
     const itemDesc = document.getElementById('itemDesc').value.trim();
     const saleValue = parseFloat(document.getElementById('saleValue').value) || 0;
-    const saleQty = Math.max(1, parseInt(document.getElementById('saleQty').value) || 1);
+    const saleQtyRaw = Number(document.getElementById('saleQty').value);
+    const saleQty = Math.floor(saleQtyRaw);
     const saleDate = document.getElementById('saleDate').value || todayISO();
 
-    if (!clientName || !itemDesc || saleValue <= 0) {
-      alert('Preencha o nome do cliente, o item e um valor maior que zero.');
+    if (!clientName || !itemDesc || !Number.isFinite(saleValue) || saleValue <= 0 || !Number.isInteger(saleQtyRaw) || saleQty < 1) {
+      alert('Preencha cliente, item, valor total maior que zero e uma quantidade inteira a partir de 1.');
       return;
     }
 
-    // Só baixa estoque quando o item está sendo controlado.
-    const stock = loadStock();
-    const key = stockKey(itemDesc);
-    const tracked = !!stock[key];
-    const available = tracked ? Math.max(0, Number(stock[key].qty) || 0) : null;
-
-    if (tracked && available < saleQty) {
-      alert(`Estoque insuficiente: há ${available} un de "${itemDesc}" e você tentou vender ${saleQty} un. A venda não foi registrada.`);
-      return;
+    const stockBeforeSale = loadStock();
+    const stockKeyForSale = stockKey(itemDesc);
+    if (stockBeforeSale[stockKeyForSale]) {
+      const available = Math.max(0, Math.floor(Number(stockBeforeSale[stockKeyForSale].qty) || 0));
+      if (available < saleQty) {
+        alert(`Estoque insuficiente para registrar a venda. Há ${available} unidade(s) de "${itemDesc}" e foram informadas ${saleQty}. Ajuste o estoque ou a quantidade.`);
+        return;
+      }
     }
 
     const sales = loadSales();
+    const stockWasTracked = Boolean(stockBeforeSale[stockKeyForSale]);
     sales.unshift({
       id: Date.now(),
       clientName, itemDesc, value: saleValue, quantity: saleQty, date: saleDate,
-      pago: currentPagoStatus, stockDeducted: tracked
+      pago: currentPagoStatus, stockDeducted: stockWasTracked
     });
     saveSales(sales);
 
-    if (tracked) {
-      stock[key].qty = available - saleQty;
-      saveStock(stock);
-    }
+    removeStockQty(itemDesc, saleQty);
     renderStock();
 
     document.getElementById('clientName').value = '';
@@ -1169,35 +1341,38 @@
   }
 
   function deleteSale(id) {
-    let sales = loadSales();
+    const sales = loadSales();
     const sale = sales.find(x => x.id === id);
     if (!sale) return;
-
-    if (sale.stockDeducted && sale.itemDesc && sale.quantity > 0) {
-      addStockQty(sale.itemDesc, sale.quantity);
+    const stock = loadStock();
+    const key = stockKey(sale.itemDesc || '');
+    if (sale.stockDeducted === true || (sale.stockDeducted === undefined && stock[key])) {
+      if (stock[key]) addStockQty(sale.itemDesc, Math.max(1, Math.floor(Number(sale.quantity) || 1)));
     }
-
-    sales = sales.filter(x => x.id !== id);
-    saveSales(sales);
-    renderSales();
+    saveSales(sales.filter(x => x.id !== id));
     renderStock();
+    renderSales();
   }
 
   function clearAll() {
     const sales = loadSales();
+    const stock = loadStock();
     sales.forEach(sale => {
-      if (sale.stockDeducted && sale.itemDesc && sale.quantity > 0) {
-        addStockQty(sale.itemDesc, sale.quantity);
+      const key = stockKey(sale.itemDesc || '');
+      const wasDeducted = sale.stockDeducted === true || (sale.stockDeducted === undefined && Boolean(stock[key]));
+      if (wasDeducted && stock[key]) {
+        stock[key].qty = Math.max(0, Math.floor(Number(stock[key].qty) || 0)) + Math.max(1, Math.floor(Number(sale.quantity) || 1));
       }
     });
+    saveStock(stock);
     saveSales([]);
-    renderSales();
     renderStock();
+    renderSales();
   }
 
   function setFilter(f) {
     currentFilter = f;
-    document.querySelectorAll('.filter-tabs button').forEach(b => {
+    document.querySelectorAll('#tabVendas .filter-tabs button').forEach(b => {
       b.classList.toggle('active', b.dataset.filter === f);
     });
     renderSales();
@@ -1206,9 +1381,9 @@
   function renderSales() {
     const sales = loadSales();
 
-    const totalVendido = sales.reduce((s, x) => s + x.value, 0);
-    const totalRecebido = sales.filter(x => x.pago).reduce((s, x) => s + x.value, 0);
-    const totalPendente = sales.filter(x => !x.pago).reduce((s, x) => s + x.value, 0);
+    const totalVendido = sales.reduce((s, x) => s + (Number(x.value) || 0), 0);
+    const totalRecebido = sales.filter(x => x.pago).reduce((s, x) => s + (Number(x.value) || 0), 0);
+    const totalPendente = sales.filter(x => !x.pago).reduce((s, x) => s + (Number(x.value) || 0), 0);
 
     document.getElementById('sumTotal').textContent = 'R$ ' + fmt(totalVendido);
     document.getElementById('sumRecebido').textContent = 'R$ ' + fmt(totalRecebido);
@@ -1254,9 +1429,140 @@
   }
 
   // ============================================================
+  //  FATURAMENTO E GASTOS
+  // ============================================================
+  const EXPENSES_KEY = 'gastos_registro_3d';
+  let currentPeriod = 'todos';
+
+  function loadExpenses() {
+    try {
+      const raw = localStorage.getItem(EXPENSES_KEY);
+      const data = raw ? JSON.parse(raw) : [];
+      return Array.isArray(data) ? data : [];
+    } catch (e) { return []; }
+  }
+
+  function saveExpenses(list) {
+    try { localStorage.setItem(EXPENSES_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function setPeriod(p) {
+    currentPeriod = p;
+    document.querySelectorAll('#tabFaturamento .filter-tabs button').forEach(b => {
+      b.classList.toggle('active', b.dataset.period === p);
+    });
+    renderFaturamento();
+  }
+
+  // Compara uma data ISO (yyyy-mm-dd) com o mês/ano atual
+  function isSameMonthISO(iso) {
+    if (!iso) return false;
+    const now = new Date();
+    const parts = iso.split('-');
+    if (parts.length < 2) return false;
+    return parseInt(parts[0]) === now.getFullYear() && parseInt(parts[1]) === (now.getMonth() + 1);
+  }
+
+  // Compara uma data no formato brasileiro (dd/mm/yyyy) com o mês/ano atual
+  function isSameMonthBR(br) {
+    if (!br) return false;
+    const now = new Date();
+    const parts = br.split('/');
+    if (parts.length < 3) return false;
+    return parseInt(parts[2]) === now.getFullYear() && parseInt(parts[1]) === (now.getMonth() + 1);
+  }
+
+  function addExpense() {
+    const desc = document.getElementById('expenseDesc').value.trim();
+    const category = document.getElementById('expenseCategory').value;
+    const value = parseFloat(document.getElementById('expenseValue').value) || 0;
+    const date = document.getElementById('expenseDate').value || todayISO();
+
+    if (!desc || !Number.isFinite(value) || value <= 0) {
+      alert('Preencha a descrição e um valor maior que zero.');
+      return;
+    }
+
+    const expenses = loadExpenses();
+    expenses.unshift({ id: Date.now(), desc, category, value, date });
+    saveExpenses(expenses);
+
+    document.getElementById('expenseDesc').value = '';
+    document.getElementById('expenseValue').value = '';
+    document.getElementById('expenseDate').value = todayISO();
+    document.getElementById('expenseDesc').focus();
+
+    renderFaturamento();
+  }
+
+  function deleteExpense(id) {
+    let expenses = loadExpenses();
+    expenses = expenses.filter(x => x.id !== id);
+    saveExpenses(expenses);
+    renderFaturamento();
+  }
+
+  function clearExpenses() {
+    saveExpenses([]);
+    renderFaturamento();
+  }
+
+  function renderFaturamento() {
+    const sales = loadSales();
+    const filteredSales = currentPeriod === 'todos' ? sales : sales.filter(s => isSameMonthISO(s.date));
+    const faturamento = filteredSales.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+
+    const log = loadLog();
+    const filteredLog = currentPeriod === 'todos' ? log : log.filter(e => isSameMonthBR(e.date));
+    const prodCost = filteredLog.reduce((sum, e) => sum + e.adjustedCost, 0);
+
+    const expenses = loadExpenses();
+    const filteredExpenses = currentPeriod === 'todos' ? expenses : expenses.filter(e => isSameMonthISO(e.date));
+    const expensesTotal = filteredExpenses.reduce((sum, e) => sum + (Number(e.value) || 0), 0);
+
+    const gastos = prodCost + expensesTotal;
+    const lucro = faturamento - gastos;
+
+    document.getElementById('fatFaturamento').textContent = 'R$ ' + fmt(faturamento);
+    document.getElementById('fatGastos').textContent = 'R$ ' + fmt(gastos);
+    document.getElementById('fatProdCost').textContent = 'R$ ' + fmt(prodCost);
+
+    const lucroEl = document.getElementById('fatLucro');
+    lucroEl.textContent = 'R$ ' + fmt(lucro);
+    lucroEl.style.color = lucro >= 0 ? 'var(--good)' : 'var(--bad)';
+
+    const list = document.getElementById('expenseList');
+    const empty = document.getElementById('expenseEmpty');
+
+    if (filteredExpenses.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    list.innerHTML = filteredExpenses.map(e => `
+      <div class="sale-item" style="border-left-color:var(--bad);">
+        <div class="sale-top">
+          <div>
+            <div class="sale-client">${escapeHtml(e.desc)}</div>
+            <div class="sale-item-name">${escapeHtml(e.category)}</div>
+            <div class="sale-date">${fmtDate(e.date)}</div>
+          </div>
+          <div class="sale-value" style="color:var(--bad);">− R$ ${fmt(e.value)}</div>
+        </div>
+        <div class="sale-bottom" style="justify-content:flex-end;">
+          <button class="del" onclick="confirmClick(this, () => deleteExpense(${e.id}), '❓')">🗑️</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ============================================================
   //  Inicialização
   // ============================================================
   document.getElementById('saleDate').value = todayISO();
+  document.getElementById('expenseDate').value = todayISO();
   setPagoStatus(true);
 
   calcIds.forEach(id => {
@@ -1265,10 +1571,12 @@
   document.getElementById('itemName').addEventListener('input', calculate);
   document.getElementById('itemName').addEventListener('input', updateProductCodeDisplay);
 
+  restorePrinter();
   calculate();
   renderLog();
   renderSales();
   renderStock();
+  renderFaturamento();
   updateProductCodeDisplay();
 </script>
 </body>
