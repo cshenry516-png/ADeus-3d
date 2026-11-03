@@ -435,8 +435,8 @@
           <input type="number" id="failRate" value="10" min="0" max="80" step="1">
         </div>
         <div class="field">
-          <label>Margem de lucro <span class="hint">% (mín. recomendado: 30%)</span></label>
-          <input type="number" id="profitMargin" value="30" min="0" max="90" step="1">
+          <label>Margem de lucro <span class="hint">% (mínimo 30%)</span></label>
+          <input type="number" id="profitMargin" value="30" min="30" max="90" step="1">
         </div>
       </div>
     </div>
@@ -456,8 +456,35 @@
       <div class="footer-note" style="text-align:left; margin-top:0;">O DAS-MEI é fixo por mês (não é % da venda). Aqui ele é diluído entre as unidades que você estima vender no mês, pra entrar como custo em cada peça.</div>
     </div>
 
+    <div class="card">
+      <h2>🛒 Comissão de Marketplace</h2>
+      <div class="field">
+        <label>Plataforma</label>
+        <select id="marketplacePlatform" onchange="applyMarketplacePreset()">
+          <option value="0|0" selected>Venda direta (sem comissão)</option>
+          <option value="12|0">Elo7 (~12%)</option>
+          <option value="13|0">Mercado Livre Clássico (~13%)</option>
+          <option value="17|6">Mercado Livre Premium (~17% + R$6)</option>
+          <option value="14|4">Shopee (~14% + R$4)</option>
+          <option value="10|3">Etsy (~10% + taxas, aprox.)</option>
+          <option value="custom">Outro / personalizado</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Comissão <span class="hint">%</span></label>
+          <input type="number" id="marketplaceCommission" value="0" min="0" max="90" step="0.1">
+        </div>
+        <div class="field">
+          <label>Taxa fixa por unidade vendida (R$)</label>
+          <input type="number" id="marketplaceFixedFee" value="0" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="footer-note" style="text-align:left; margin-top:0;">A taxa fixa é cobrada em cada unidade vendida (o app multiplica pela quantidade do lote). Se a plataforma cobrar por pedido, ajuste o valor. As taxas variam por categoria e plano: confira os valores atuais.</div>
+    </div>
+
     <div class="card result-card">
-      <div class="label">PREÇO SUGERIDO DE VENDA DIRETA</div>
+      <div class="label">PREÇO SUGERIDO DE VENDA</div>
       <div class="price" id="finalPrice">R$ 0,00</div>
       <div class="breakdown" id="breakdown"></div>
       <div class="btn-row">
@@ -473,7 +500,7 @@
         <table id="logTable">
           <thead>
             <tr>
-              <th>Data</th><th>Item</th><th>Qtde</th><th>Custo ajustado</th><th>Preço/un</th><th>Total</th><th>Lucro estimado</th><th>Margem</th><th></th>
+              <th>Data</th><th>Item</th><th>Qtde</th><th>Custo Produção</th><th>Preço/un</th><th>Total</th><th>Lucro estimado</th><th>Margem</th><th></th>
             </tr>
           </thead>
           <tbody id="logBody"></tbody>
@@ -481,10 +508,10 @@
         <div class="log-stats">
           <div><span>Total de unidades</span><span id="logUnits">0</span></div>
           <div><span>Custo de produção total</span><span id="logCost">R$ 0,00</span></div>
-          <div><span>Lucro potencial estimado</span><span id="logProfit">R$ 0,00</span></div>
+          <div><span>Lucro total</span><span id="logProfit">R$ 0,00</span></div>
         </div>
         <div class="log-total">
-          <span>Preço sugerido total das impressões</span>
+          <span>Total vendido registrado</span>
           <span id="logTotal">R$ 0,00</span>
         </div>
         <button id="clearLogBtn" onclick="confirmClick(this, clearLog, '⚠️ Toque de novo para confirmar')">🗑️ Limpar registro</button>
@@ -511,15 +538,14 @@
       </div>
       <div class="row">
         <div class="field">
-          <label>Valor total da venda (R$)</label>
+          <label>Valor (R$)</label>
           <input type="number" id="saleValue" placeholder="0,00" min="0" step="0.01">
         </div>
         <div class="field">
           <label>Quantidade vendida</label>
-          <input type="number" id="saleQty" value="1" min="1" step="1" required>
+          <input type="number" id="saleQty" value="1" min="1" step="1">
         </div>
       </div>
-      <div class="footer-note" style="text-align:left; margin-top:-4px; margin-bottom:10px;">Informe o valor total do pedido. A quantidade é usada para baixar o estoque.</div>
       <div class="field">
         <label>Data</label>
         <input type="date" id="saleDate">
@@ -573,7 +599,7 @@
       </div>
       <div class="field">
         <label>Quantidade</label>
-        <input type="number" id="stockAdjustQty" value="1" min="1" step="1" required>
+        <input type="number" id="stockAdjustQty" value="1" min="1" step="1">
       </div>
       <div class="btn-row">
         <button id="stockAddBtn" onclick="manualStockChange(1)">➕ Adicionar</button>
@@ -613,14 +639,14 @@
         <div class="value" id="fatGastos">R$ 0,00</div>
       </div>
       <div class="summary-box recebido">
-        <div class="label">Resultado estimado</div>
+        <div class="label">Lucro líquido</div>
         <div class="value" id="fatLucro">R$ 0,00</div>
       </div>
     </div>
 
     <div class="card">
       <h2>🏭 Custo de produção</h2>
-      <div class="footer-note" style="text-align:left; margin-top:0;">Somado automaticamente a partir do Registro de Impressões, incluindo a reserva para falhas. Como o custo entra quando a peça é produzida, o resultado pode ficar menor enquanto houver peças ainda em estoque; não é um demonstrativo contábil.</div>
+      <div class="footer-note" style="text-align:left; margin-top:0;">Somado automaticamente a partir do Registro de Impressões da Calculadora.</div>
       <div class="log-total"><span>Total no período</span><span id="fatProdCost">R$ 0,00</span></div>
     </div>
 
@@ -720,10 +746,9 @@
   // ============================================================
   const calcIds = ['filamentPrice','filamentWeight','printHours','printMinutes','power','energyPrice','energyTax','flagSurcharge',
     'printerValue','printerLife','laborRate','laborTime','postProcessTime','postProcessMaterials','extraCosts','failRate','profitMargin','quantity',
-    'meiDas','meiMonthlySales'];
+    'meiDas','meiMonthlySales','marketplaceCommission','marketplaceFixedFee'];
 
   let currentCalc = null;
-  let currentCalcRegistered = false;
 
   // ---------- Impressora selecionada ----------
   const PRINTER_KEY = 'impressora_selecionada_3d';
@@ -758,8 +783,16 @@
     }
   }
 
+  function applyMarketplacePreset() {
+    const val = document.getElementById('marketplacePlatform').value;
+    if (val === 'custom') return;
+    const [pct, fee] = val.split('|').map(Number);
+    document.getElementById('marketplaceCommission').value = pct;
+    document.getElementById('marketplaceFixedFee').value = fee;
+    calculate();
+  }
+
   function calculate() {
-    currentCalcRegistered = false;
     const read = (id, fallback = 0) => {
       const el = document.getElementById(id);
       const n = Number.parseFloat(el.value);
@@ -785,8 +818,12 @@
     const extraCosts = read('extraCosts');
     const meiDas = read('meiDas');
     const meiMonthlySales = Math.max(1, Math.floor(read('meiMonthlySales', 1)));
+    const marketplaceCommission = Math.min(90, read('marketplaceCommission'));
+    const marketplaceFixedFee = read('marketplaceFixedFee');
     const failRate = Math.min(80, read('failRate'));
-    const profitMargin = Math.min(90, read('profitMargin'));
+    const typedMargin = Math.min(90, read('profitMargin'));
+    const marginRaised = typedMargin < 30;
+    const profitMargin = Math.max(30, typedMargin);
 
     // Todos os valores de consumo/tempo e extras acima representam o lote inteiro.
     const filamentCost = (filamentWeight / 1000) * filamentPrice;
@@ -804,19 +841,27 @@
     const directTotalPrice = riskAdjustedCost / (1 - profitMargin / 100);
     const directUnitPrice = directTotalPrice / quantity;
 
-    const selectedTotalPrice = directTotalPrice;
-    const selectedUnitPrice = directUnitPrice;
-    const selectedNetRevenue = selectedTotalPrice;
+    // Comissão incide sobre o preço anunciado; taxa fixa é cobrada uma vez por pedido.
+    const marketplaceFixedFeeTotal = marketplaceFixedFee * quantity;
+    const marketplaceTotalPrice = (directTotalPrice + marketplaceFixedFeeTotal) / (1 - marketplaceCommission / 100);
+    const marketplaceUnitPrice = marketplaceTotalPrice / quantity;
+    const marketplaceFeeTotal = marketplaceTotalPrice * marketplaceCommission / 100 + marketplaceFixedFeeTotal;
+    const selectedPlatform = document.getElementById('marketplacePlatform').value;
+    const usingMarketplace = selectedPlatform !== '0|0' && (marketplaceCommission > 0 || marketplaceFixedFee > 0);
+    const selectedTotalPrice = usingMarketplace ? marketplaceTotalPrice : directTotalPrice;
+    const selectedUnitPrice = selectedTotalPrice / quantity;
+    const selectedNetRevenue = selectedTotalPrice - (usingMarketplace ? marketplaceFeeTotal : 0);
     const selectedProfit = selectedNetRevenue - riskAdjustedCost;
     const selectedMargin = selectedNetRevenue > 0 ? (selectedProfit / selectedNetRevenue) * 100 : 0;
     const productionCostPerUnit = baseCost / quantity;
     const riskCostPerUnit = riskAdjustedCost / quantity;
 
     const warnings = [];
-    if (profitMargin < 30) warnings.push('Margem abaixo de 30%: o cálculo respeita o percentual informado, mas avalie se cobre seus objetivos.');
+    if (marginRaised) warnings.push('Margem abaixo de 30%: usando 30% no cálculo (mínimo definido).');
     if (failRate > 25) warnings.push('Taxa de falha elevada: revise o perfil de impressão e a estimativa de perdas.');
     if (printTime === 0 && filamentWeight === 0) warnings.push('Informe o consumo de filamento e/ou o tempo de impressão para obter um custo realista.');
-    
+    if (marketplaceCommission >= 90) warnings.push('Comissão muito alta: confira a taxa informada.');
+
     document.getElementById('finalPrice').textContent = 'R$ ' + fmt(selectedUnitPrice) + (quantity > 1 ? ' /un' : '');
     const warningHtml = warnings.map(w => `<div class="margin-warning">⚠️ ${w}</div>`).join('');
     document.getElementById('breakdown').innerHTML = `
@@ -832,10 +877,14 @@
       <div><span>Custo de produção do lote</span><span>R$ ${fmt(baseCost)}</span></div>
       <div><span>Reserva para falhas (${fmt(failRate)}%)</span><span>R$ ${fmt(riskAdjustedCost - baseCost)}</span></div>
       <div><span>Custo ajustado / unidade</span><span>R$ ${fmt(riskCostPerUnit)}</span></div>
-      <div><span>Preço sugerido / unidade</span><span>R$ ${fmt(selectedUnitPrice)}</span></div>
-      <div><span>Preço sugerido / lote</span><span>R$ ${fmt(selectedTotalPrice)}</span></div>
-      <div><span>Lucro estimado do lote</span><span>R$ ${fmt(selectedProfit)}</span></div>
-      <div><span>Margem de lucro</span><span>${fmt(selectedMargin)}%</span></div>
+      <div><span>Preço venda direta / unidade</span><span>R$ ${fmt(directUnitPrice)}</span></div>
+      <div><span>Preço venda direta / lote</span><span>R$ ${fmt(directTotalPrice)}</span></div>
+      ${(marketplaceCommission > 0 || marketplaceFixedFee > 0) ? `<div><span>Taxas do marketplace / lote</span><span>R$ ${fmt(marketplaceFeeTotal)}</span></div><div><span>Preço marketplace / unidade</span><span>R$ ${fmt(marketplaceUnitPrice)}</span></div><div><span>Preço marketplace / lote</span><span>R$ ${fmt(marketplaceTotalPrice)}</span></div>` : ''}
+      <div><span>Preço sugerido selecionado / unidade</span><span>R$ ${fmt(selectedUnitPrice)}</span></div>
+      <div><span>Preço sugerido selecionado / lote</span><span>R$ ${fmt(selectedTotalPrice)}</span></div>
+      <div><span>Receita líquida após taxas</span><span>R$ ${fmt(selectedNetRevenue)}</span></div>
+      <div><span>Lucro estimado após taxas</span><span>R$ ${fmt(selectedProfit)}</span></div>
+      <div><span>Margem sobre receita líquida</span><span>${fmt(selectedMargin)}%</span></div>
       <div><span>Quantidade do lote</span><span>${quantity} un</span></div>
     `;
 
@@ -844,8 +893,8 @@
       productionCostPerUnit, pricePerUnit: selectedUnitPrice,
       finalPrice: selectedTotalPrice, profit: selectedProfit,
       profitMarginReal: selectedMargin, printer: currentPrinterName(),
-      directUnitPrice, directTotalPrice, riskAdjustedCost, netRevenue: selectedNetRevenue,
-      adjustedCost: riskAdjustedCost
+      directUnitPrice, directTotalPrice, marketplaceUnitPrice,
+      marketplaceTotalPrice, marketplaceFeeTotal, riskAdjustedCost, netRevenue: selectedNetRevenue
     };
 
     const btn = document.getElementById('registerBtn');
@@ -860,21 +909,19 @@
     try {
       const raw = localStorage.getItem(LOG_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      if (!Array.isArray(parsed)) return [];
       return parsed.map(e => {
-        const baseCost = Number(e.baseCost !== undefined ? e.baseCost : (e.finalPrice || 0)) || 0;
-        const finalPrice = Number(e.finalPrice) || 0;
-        const profit = Number(e.profit !== undefined ? e.profit : (finalPrice - baseCost)) || 0;
-        const profitMarginReal = Number(e.profitMarginReal !== undefined ? e.profitMarginReal : (finalPrice > 0 ? (profit / finalPrice) * 100 : 0)) || 0;
+        const baseCost = (e.baseCost !== undefined) ? e.baseCost : (e.finalPrice || 0);
+        const finalPrice = e.finalPrice || 0;
+        const profit = (e.profit !== undefined) ? e.profit : (finalPrice - baseCost);
+        const profitMarginReal = (e.profitMarginReal !== undefined) ? e.profitMarginReal : (finalPrice > 0 ? (profit / finalPrice) * 100 : 0);
         return {
           date: e.date || '',
           itemName: e.itemName || '',
-          quantity: Math.max(1, Math.floor(Number(e.quantity) || 1)),
+          quantity: e.quantity || 1,
           baseCost: baseCost,
-          adjustedCost: Number.isFinite(Number(e.adjustedCost)) ? Number(e.adjustedCost) : baseCost,
-          pricePerUnit: Number(e.pricePerUnit !== undefined ? e.pricePerUnit : finalPrice) || 0,
+          pricePerUnit: (e.pricePerUnit !== undefined) ? e.pricePerUnit : finalPrice,
           finalPrice: finalPrice,
-          netRevenue: Number(e.netRevenue !== undefined ? e.netRevenue : finalPrice) || 0,
+          netRevenue: (e.netRevenue !== undefined) ? e.netRevenue : finalPrice,
           profit: profit,
           profitMarginReal: profitMarginReal,
           printer: e.printer || ''
@@ -908,10 +955,10 @@
       const marginColor = entry.profitMarginReal >= 30 ? '#2e7d32' : (entry.profitMarginReal >= 0 ? '#e07b00' : '#c0392b');
       return `
         <tr>
-          <td>${escapeHtml(entry.date)}</td>
+          <td>${entry.date}</td>
           <td class="item-cell">${entry.itemName ? escapeHtml(entry.itemName) : '(sem nome)'}${entry.printer ? `<div class="log-printer">${escapeHtml(entry.printer)}</div>` : ''}</td>
-          <td>${Number(entry.quantity) || 0} un</td>
-          <td>R$ ${fmt(entry.adjustedCost)}</td>
+          <td>${entry.quantity} un</td>
+          <td>R$ ${fmt(entry.baseCost)}</td>
           <td>R$ ${fmt(entry.pricePerUnit)}</td>
           <td>R$ ${fmt(entry.finalPrice)}</td>
           <td>R$ ${fmt(entry.profit)}</td>
@@ -921,9 +968,9 @@
       `;
     }).join('');
 
-    const totalRevenue = log.reduce((sum, e) => sum + (Number(e.finalPrice) || 0), 0);
-    const totalCost = log.reduce((sum, e) => sum + e.adjustedCost, 0);
-    const totalUnits = log.reduce((sum, e) => sum + (Number(e.quantity) || 0), 0);
+    const totalRevenue = log.reduce((sum, e) => sum + e.finalPrice, 0);
+    const totalCost = log.reduce((sum, e) => sum + e.baseCost, 0);
+    const totalUnits = log.reduce((sum, e) => sum + e.quantity, 0);
     const totalProfit = log.reduce((sum, e) => sum + (Number(e.profit) || 0), 0);
     const totalNetRevenue = log.reduce((sum, e) => sum + (Number(e.netRevenue) || 0), 0);
     const totalMargin = totalNetRevenue > 0 ? (totalProfit / totalNetRevenue) * 100 : 0;
@@ -934,7 +981,7 @@
   }
 
   function registerPrint() {
-    if (!currentCalc || currentCalcRegistered) return;
+    if (!currentCalc) return;
     const log = loadLog();
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR');
@@ -943,7 +990,6 @@
       itemName: currentCalc.itemName,
       quantity: currentCalc.quantity,
       baseCost: currentCalc.baseCost,
-      adjustedCost: currentCalc.riskAdjustedCost,
       pricePerUnit: currentCalc.pricePerUnit,
       finalPrice: currentCalc.finalPrice,
       netRevenue: currentCalc.netRevenue,
@@ -953,7 +999,6 @@
     });
     saveLog(log);
     renderLog();
-    currentCalcRegistered = true;
 
     if (currentCalc.itemName) {
       addStockQty(currentCalc.itemName, currentCalc.quantity);
@@ -998,6 +1043,7 @@
     saveLog([]);
     renderLog();
   }
+
   // ---------- Integração: Calculadora -> Vendas ----------
   function sendToSale() {
     if (!currentCalc) return;
@@ -1026,8 +1072,7 @@
   function loadProducts() {
     try {
       const raw = localStorage.getItem(PRODUCTS_KEY);
-      const data = raw ? JSON.parse(raw) : {};
-      return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+      return raw ? JSON.parse(raw) : {};
     } catch (e) { return {}; }
   }
 
@@ -1102,8 +1147,7 @@
   function loadStock() {
     try {
       const raw = localStorage.getItem(STOCK_KEY);
-      const data = raw ? JSON.parse(raw) : {};
-      return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+      return raw ? JSON.parse(raw) : {};
     } catch (e) { return {}; }
   }
 
@@ -1116,13 +1160,12 @@
   }
 
   function addStockQty(name, qty) {
-    const amount = Math.floor(Number(qty));
-    if (!name || !name.trim() || !Number.isFinite(amount) || amount <= 0) return;
+    if (!name || !name.trim() || qty <= 0) return;
     registerProduct(name);
     const stock = loadStock();
     const key = stockKey(name);
     if (!stock[key]) stock[key] = { name: name.trim(), qty: 0 };
-    stock[key].qty = Math.max(0, Math.floor(Number(stock[key].qty) || 0)) + amount;
+    stock[key].qty += qty;
     saveStock(stock);
   }
 
@@ -1131,13 +1174,10 @@
     const stock = loadStock();
     const key = stockKey(name);
     if (!stock[key]) return { found: false, ok: false, available: 0 };
-    const available = Math.max(0, Math.floor(Number(stock[key].qty) || 0));
-    const amount = Math.floor(Number(qty));
-    const ok = Number.isFinite(amount) && amount > 0 && available >= amount;
-    if (ok) {
-      stock[key].qty = available - amount;
-      saveStock(stock);
-    }
+    const available = stock[key].qty;
+    const ok = available >= qty;
+    stock[key].qty = Math.max(0, available - qty);
+    saveStock(stock);
     return { found: true, ok, available };
   }
 
@@ -1145,11 +1185,10 @@
     const nameInput = document.getElementById('stockItemName');
     const qtyInput = document.getElementById('stockAdjustQty');
     const name = nameInput.value.trim();
-    const qtyRaw = Number(qtyInput.value);
-    const qty = Math.floor(qtyRaw);
+    const qty = Math.max(1, parseInt(qtyInput.value) || 1);
 
-    if (!name || !Number.isInteger(qtyRaw) || qty < 1) {
-      alert('Digite o nome do item e uma quantidade inteira a partir de 1.');
+    if (!name) {
+      alert('Digite o nome do item.');
       return;
     }
 
@@ -1162,7 +1201,7 @@
         return;
       }
       if (!res.ok) {
-        alert(`Estoque insuficiente: há apenas ${res.available} un. O estoque não foi alterado.`);
+        alert(`Estoque insuficiente: havia apenas ${res.available} un. Estoque zerado.`);
       }
     }
 
@@ -1174,7 +1213,7 @@
   function adjustStockByKey(key, delta) {
     const stock = loadStock();
     if (!stock[key]) return;
-    stock[key].qty = Math.max(0, Math.floor(Number(stock[key].qty) || 0) + Math.trunc(Number(delta) || 0));
+    stock[key].qty = Math.max(0, stock[key].qty + delta);
     saveStock(stock);
     renderStock();
   }
@@ -1248,7 +1287,7 @@
     `;
     }).join('');
 
-    const totalUnits = items.reduce((sum, [, s]) => sum + Math.max(0, Math.floor(Number(s.qty) || 0)), 0);
+    const totalUnits = items.reduce((sum, [, s]) => sum + s.qty, 0);
     document.getElementById('stockTotalUnits').textContent = totalUnits + ' un';
   }
 
@@ -1276,8 +1315,7 @@
   function loadSales() {
     try {
       const raw = localStorage.getItem(SALES_KEY);
-      const data = raw ? JSON.parse(raw) : [];
-      return Array.isArray(data) ? data : [];
+      return raw ? JSON.parse(raw) : [];
     } catch (e) { return []; }
   }
 
@@ -1289,35 +1327,25 @@
     const clientName = document.getElementById('clientName').value.trim();
     const itemDesc = document.getElementById('itemDesc').value.trim();
     const saleValue = parseFloat(document.getElementById('saleValue').value) || 0;
-    const saleQtyRaw = Number(document.getElementById('saleQty').value);
-    const saleQty = Math.floor(saleQtyRaw);
+    const saleQty = Math.max(1, parseInt(document.getElementById('saleQty').value) || 1);
     const saleDate = document.getElementById('saleDate').value || todayISO();
 
-    if (!clientName || !itemDesc || !Number.isFinite(saleValue) || saleValue <= 0 || !Number.isInteger(saleQtyRaw) || saleQty < 1) {
-      alert('Preencha cliente, item, valor total maior que zero e uma quantidade inteira a partir de 1.');
+    if (!clientName || !itemDesc || saleValue <= 0) {
+      alert('Preencha o nome do cliente, o item e um valor maior que zero.');
       return;
     }
 
-    const stockBeforeSale = loadStock();
-    const stockKeyForSale = stockKey(itemDesc);
-    if (stockBeforeSale[stockKeyForSale]) {
-      const available = Math.max(0, Math.floor(Number(stockBeforeSale[stockKeyForSale].qty) || 0));
-      if (available < saleQty) {
-        alert(`Estoque insuficiente para registrar a venda. Há ${available} unidade(s) de "${itemDesc}" e foram informadas ${saleQty}. Ajuste o estoque ou a quantidade.`);
-        return;
-      }
-    }
-
     const sales = loadSales();
-    const stockWasTracked = Boolean(stockBeforeSale[stockKeyForSale]);
     sales.unshift({
       id: Date.now(),
-      clientName, itemDesc, value: saleValue, quantity: saleQty, date: saleDate,
-      pago: currentPagoStatus, stockDeducted: stockWasTracked
+      clientName, itemDesc, value: saleValue, quantity: saleQty, date: saleDate, pago: currentPagoStatus
     });
     saveSales(sales);
 
-    removeStockQty(itemDesc, saleQty);
+    const stockRes = removeStockQty(itemDesc, saleQty);
+    if (stockRes.found && !stockRes.ok) {
+      alert(`Atenção: o estoque de "${itemDesc}" tinha apenas ${stockRes.available} un. Estoque zerado.`);
+    }
     renderStock();
 
     document.getElementById('clientName').value = '';
@@ -1341,32 +1369,14 @@
   }
 
   function deleteSale(id) {
-    const sales = loadSales();
-    const sale = sales.find(x => x.id === id);
-    if (!sale) return;
-    const stock = loadStock();
-    const key = stockKey(sale.itemDesc || '');
-    if (sale.stockDeducted === true || (sale.stockDeducted === undefined && stock[key])) {
-      if (stock[key]) addStockQty(sale.itemDesc, Math.max(1, Math.floor(Number(sale.quantity) || 1)));
-    }
-    saveSales(sales.filter(x => x.id !== id));
-    renderStock();
+    let sales = loadSales();
+    sales = sales.filter(x => x.id !== id);
+    saveSales(sales);
     renderSales();
   }
 
   function clearAll() {
-    const sales = loadSales();
-    const stock = loadStock();
-    sales.forEach(sale => {
-      const key = stockKey(sale.itemDesc || '');
-      const wasDeducted = sale.stockDeducted === true || (sale.stockDeducted === undefined && Boolean(stock[key]));
-      if (wasDeducted && stock[key]) {
-        stock[key].qty = Math.max(0, Math.floor(Number(stock[key].qty) || 0)) + Math.max(1, Math.floor(Number(sale.quantity) || 1));
-      }
-    });
-    saveStock(stock);
     saveSales([]);
-    renderStock();
     renderSales();
   }
 
@@ -1381,9 +1391,9 @@
   function renderSales() {
     const sales = loadSales();
 
-    const totalVendido = sales.reduce((s, x) => s + (Number(x.value) || 0), 0);
-    const totalRecebido = sales.filter(x => x.pago).reduce((s, x) => s + (Number(x.value) || 0), 0);
-    const totalPendente = sales.filter(x => !x.pago).reduce((s, x) => s + (Number(x.value) || 0), 0);
+    const totalVendido = sales.reduce((s, x) => s + x.value, 0);
+    const totalRecebido = sales.filter(x => x.pago).reduce((s, x) => s + x.value, 0);
+    const totalPendente = sales.filter(x => !x.pago).reduce((s, x) => s + x.value, 0);
 
     document.getElementById('sumTotal').textContent = 'R$ ' + fmt(totalVendido);
     document.getElementById('sumRecebido').textContent = 'R$ ' + fmt(totalRecebido);
@@ -1437,8 +1447,7 @@
   function loadExpenses() {
     try {
       const raw = localStorage.getItem(EXPENSES_KEY);
-      const data = raw ? JSON.parse(raw) : [];
-      return Array.isArray(data) ? data : [];
+      return raw ? JSON.parse(raw) : [];
     } catch (e) { return []; }
   }
 
@@ -1478,7 +1487,7 @@
     const value = parseFloat(document.getElementById('expenseValue').value) || 0;
     const date = document.getElementById('expenseDate').value || todayISO();
 
-    if (!desc || !Number.isFinite(value) || value <= 0) {
+    if (!desc || value <= 0) {
       alert('Preencha a descrição e um valor maior que zero.');
       return;
     }
@@ -1510,15 +1519,15 @@
   function renderFaturamento() {
     const sales = loadSales();
     const filteredSales = currentPeriod === 'todos' ? sales : sales.filter(s => isSameMonthISO(s.date));
-    const faturamento = filteredSales.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+    const faturamento = filteredSales.reduce((sum, s) => sum + s.value, 0);
 
     const log = loadLog();
     const filteredLog = currentPeriod === 'todos' ? log : log.filter(e => isSameMonthBR(e.date));
-    const prodCost = filteredLog.reduce((sum, e) => sum + e.adjustedCost, 0);
+    const prodCost = filteredLog.reduce((sum, e) => sum + e.baseCost, 0);
 
     const expenses = loadExpenses();
     const filteredExpenses = currentPeriod === 'todos' ? expenses : expenses.filter(e => isSameMonthISO(e.date));
-    const expensesTotal = filteredExpenses.reduce((sum, e) => sum + (Number(e.value) || 0), 0);
+    const expensesTotal = filteredExpenses.reduce((sum, e) => sum + e.value, 0);
 
     const gastos = prodCost + expensesTotal;
     const lucro = faturamento - gastos;
